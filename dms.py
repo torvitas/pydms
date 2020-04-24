@@ -10,6 +10,7 @@ from PyPDF2 import PdfFileReader
 from textract import process
 from yaml import safe_load
 from os import path
+from glob import glob
 
 download('punkt')
 download('stopwords')
@@ -22,20 +23,32 @@ configfilename = 'config.yml'
 
 def run():
     config = None
-    text = None
     with open(configfilename, 'r') as configfile:
         try:
             config = safe_load(configfile)
         except:
             logging.exception("Cannot load configuration", exc_info=True)
-    with open(config['file'], 'rb') as file:
-        try:
-            text = readTextFromPdf(file)
-        except:
-            logging.exception("Cannot extract text.", exc_info=True)
 
-    tokenized = extractTokensFromText(text)
-    logging.debug(tokenized)
+    if "watch" in config:
+        logging.debug("watching")
+    else:
+        files = []
+        for source in config['sources']:
+            files += glob(source)
+        load(files)
+
+
+def load(files):
+    logging.debug(files)
+    for sourcefile in files:
+        text = None
+        with open(sourcefile, 'rb') as filehandle:
+            try:
+                text = readTextFromPdf(filehandle)
+            except:
+                logging.exception("Cannot extract text.", exc_info=True)
+        tokenized = extractTokensFromText(text)
+        logging.debug(tokenized)
 
 
 def readTextFromPdf(file):

@@ -1,5 +1,7 @@
 ---
-file: test.pdf
+sources:
+  - test.pdf
+  - $HOME/Documents/Scanner/
 rules:
   - match: "Internet"
     catch: "Jahr ([0-9]4)"
