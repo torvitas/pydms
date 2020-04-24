@@ -1,0 +1,9 @@
+---
+file: test.pdf
+rules:
+  - match: "Internet"
+    catch: "Jahr ([0-9]4)"
+    target: "\\1"
+  - match: "Foo"
+    catch: "Bar ([0-9]4)"
+    target: "\\1"
