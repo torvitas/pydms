@@ -4,8 +4,6 @@
 import logging
 import asyncio
 
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
 from nltk import download
 from PyPDF2 import PdfFileReader
 from textract import process
@@ -15,9 +13,6 @@ from glob import glob
 from functools import reduce
 from aionotify import Watcher, Flags
 from re import compile
-
-download("punkt")
-download("stopwords")
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
@@ -36,10 +31,22 @@ def run():
             logging.exception("Cannot load configuration", exc_info=True)
 
     for rule in config["rules"]:
-        rules.append(compile(rule["match"]))
+        prepared = {
+            "config": rule,
+            "match": compile(rule["match"]),
+            "extract": []
+        }
+        if "extract" in rule:
+            for extractor in rule["extract"]:
+                prepared["extract"].append({
+                    "compiled":
+                    compile(extractor["match"]),
+                    "config":
+                    extractor
+                })
+        rules.append(prepared)
 
     sources = []
-    globs = []
     for source in config["sources"]:
         sources.append(path.abspath(path.expandvars(path.expanduser(source))))
     logging.debug(sources)
@@ -85,24 +92,34 @@ def sourcesToFilenames(sources):
 
 
 def load(file):
-    logging.debug("file: " + file)
+    logging.info("Loading " + file)
     text = None
     with open(file, "rb") as filehandle:
         try:
             text = readTextFromPdf(filehandle)
         except:
             logging.exception("Cannot extract text.", exc_info=True)
-    tokenized = extractTokensFromText(text)
-    rule = applyRules(tokenized)
-    logging.debug(rule)
+    match = matchRules(text)
+    if match:
+        properties = extractProperties(text, match["extract"])
 
 
-def applyRules(tokens):
+def matchRules(text):
+    logging.info("Looking for rules..")
     for rule in rules:
-        for token in tokens:
-            if rule.match(token):
-                logging.info("Found match: " + token)
-                return rule
+        match = rule["match"].match(text)
+        if match:
+            logging.info("Found rule: " + match.group())
+            return rule
+    logging.info("No rule applied.")
+
+
+def extractProperties(text, extract):
+    for extractor in extract:
+        match = extractor["compiled"].match(text)
+        propertyName = extractor["config"]["key"]
+        if match:
+            logging.info(f"Found {propertyName} {', '.join(match.groups())}")
 
 
 def readTextFromPdf(file):
@@ -111,19 +128,11 @@ def readTextFromPdf(file):
     for page in pdf.pages:
         text += page.extractText().strip()
 
+    logging.info("No text found, using ocr.")
     if text == "":
-        text = process(filename, method="tesseract", language="deu")
+        text = str(process(file.name, method="tesseract", language="deu"))
 
     return text
-
-
-def extractTokensFromText(text):
-    tokens = word_tokenize(str(text))
-    punctuations = ["(', ')", ";", ":", "[", "]", ","]
-    stop_words = stopwords.words("german")
-
-    content = list(set(tokens) - set(punctuations) - set(stop_words))
-    return content
 
 
 run()

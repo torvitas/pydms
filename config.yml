@@ -5,9 +5,14 @@ sources:
   - test.pdf
   - ~/Documents/Scanner/
 rules:
+  - match: ".*arbeiterempfehlung.*"
+    extract:
+      - key: personalnummer
+        match: ".*Personalnummer: ([0-9]*).*"
+    target: "boo"
+  - match: "Bewerbung"
+    target: "boo"
   - match: "Internet"
-    catch: "Jahr ([0-9]4)"
-    target: "\\1"
+    target: "boo"
   - match: "Foo"
-    catch: "Bar ([0-9]4)"
     target: "\\1"
