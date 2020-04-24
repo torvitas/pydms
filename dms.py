@@ -100,8 +100,12 @@ def load(file):
         except:
             logging.exception("Cannot extract text.", exc_info=True)
     match = matchRules(text)
+    properties = []
     if match:
         properties = extractProperties(text, match["extract"])
+
+    if properties:
+        path = constructPath(match["config"]["target"], properties)
 
 
 def matchRules(text):
@@ -115,11 +119,20 @@ def matchRules(text):
 
 
 def extractProperties(text, extract):
+    properties = {}
     for extractor in extract:
         match = extractor["compiled"].match(text)
         propertyName = extractor["config"]["key"]
         if match:
+            properties[propertyName] = "".join(match.groups())
             logging.info(f"Found {propertyName} {', '.join(match.groups())}")
+    return properties
+
+
+def constructPath(target, properties):
+    path = target.format(extract=properties)
+    logging.info(path)
+    return path
 
 
 def readTextFromPdf(file):

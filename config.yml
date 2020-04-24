@@ -9,7 +9,7 @@ rules:
     extract:
       - key: personalnummer
         match: ".*Personalnummer: ([0-9]*).*"
-    target: "boo"
+    target: "./processed/{extract[personalnummer]}.pdf"
   - match: "Bewerbung"
     target: "boo"
   - match: "Internet"
