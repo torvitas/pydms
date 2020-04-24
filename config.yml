@@ -1,7 +1,9 @@
 ---
+watch: true
+import: true
 sources:
   - test.pdf
-  - $HOME/Documents/Scanner/
+  - ~/Documents/Scanner/
 rules:
   - match: "Internet"
     catch: "Jahr ([0-9]4)"

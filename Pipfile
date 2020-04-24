@@ -10,6 +10,8 @@ pypdf2 = "*"
 textract = "*"
 nltk = "*"
 pyyaml = "*"
+asyncio = "*"
+aionotify = "*"
 
 [requires]
 python_version = "3.7"
