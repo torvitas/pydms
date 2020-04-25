@@ -68,7 +68,7 @@ def watch(sources, rules):
         await watcher.setup(loop)
         while True:
             event = await watcher.get_event()
-            filename = event.alias + "/" + event.name
+            filename = f"{event.alias}/{event.name}"
             load(filename, rules)
             logging.debug(event)
 
@@ -90,7 +90,7 @@ def sourcesToFilenames(sources):
     for source in sources:
         logging.debug(source)
         if path.isdir(source):
-            files += glob(source + "/*.pdf")
+            files += glob(f"{source}/*.pdf")
         else:
             files.append(source)
     return files
@@ -158,7 +158,7 @@ def load(filename, rules):
     if path.exists(filename) != True:
         logging.info(f"{filename} does not exist, skipping.")
         return
-    logging.info("Loading " + filename)
+    logging.info(f"Loading {filename}")
     text = ""
     try:
         text = readTextFromPdf(filename)
