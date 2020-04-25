@@ -2,17 +2,16 @@
 watch: true
 import: true
 sources:
-  - test.pdf
   - ~/Documents/Scanner/
 rules:
-  - match: ".*arbeiterempfehlung.*"
+  - search: ".*arbeiterempfehlung.*"
     extract:
       - key: personalnummer
-        match: ".*Personalnummer: ([0-9]*).*"
+        search: ".*Personalnummer: ([0-9]*).*"
     target: "./processed/{extract[personalnummer]}.pdf"
-  - match: "Bewerbung"
+  - search: "Bewerbung"
+    target: "./processed/boo.pdf"
+  - search: "Internet"
     target: "boo"
-  - match: "Internet"
-    target: "boo"
-  - match: "Foo"
-    target: "\\1"
+  - search: "Foo"
+    target: "./processed/Foo.pdf"

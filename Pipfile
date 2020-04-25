@@ -6,12 +6,12 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-pypdf2 = "*"
-textract = "*"
 nltk = "*"
 pyyaml = "*"
 asyncio = "*"
+ocrmypdf = "*"
 aionotify = "*"
+pdftotext = "*"
 
 [requires]
 python_version = "3.7"
