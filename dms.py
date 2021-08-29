@@ -7,11 +7,13 @@ import asyncio
 from pdftotext import PDF
 from ocrmypdf import ocr
 from yaml import safe_load
-from os import path, rename
+from os import path
+from pathlib import Path
+from shutil import move
 from glob import glob
 from functools import reduce
 from aionotify import Watcher, Flags
-from re import compile, MULTILINE
+from re import compile, MULTILINE, sub
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
@@ -112,7 +114,7 @@ def load(filename, rules):
             match = extractor["compiled"].match(text)
             propertyName = extractor["config"]["key"]
             if match:
-                properties[propertyName] = "".join(match.groups())
+                properties[propertyName] = sub('[^\w\-_\. ]+', '-', "".join(match.groups()))
                 logging.info(
                     f"Found {propertyName} {', '.join(match.groups())}")
             else:
@@ -167,6 +169,7 @@ def load(filename, rules):
         tmpfilename = extractText(filename)
         try:
             text = readTextFromPdf(tmpfilename)
+            move(tmpfilename, filename)
         except:
             logging.info("No text found after using ocr.")
     logging.debug(text)
@@ -195,7 +198,9 @@ def load(filename, rules):
             exc_info=True)
 
     try:
-        rename(filename, path.abspath(pathname))
+        directory = path.dirname(path.abspath(pathname))
+        Path(directory).mkdir(parents=True, exist_ok=True)
+        move(filename, path.abspath(pathname))
     except:
         logging.exception(
             f"Cannot move {filename} to {path.abspath(pathname)}.",
